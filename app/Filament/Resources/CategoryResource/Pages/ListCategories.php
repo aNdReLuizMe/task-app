@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\CategoryResource\Pages;
 
-use App\Filament\Resources\CategoryResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\CategoryResource;
 
 class ListCategories extends ListRecords
 {
@@ -13,7 +13,11 @@ class ListCategories extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Nova Categoria')
+                ->modalSubmitActionLabel('Salvar Categoria')
+                ->modalHeading()
+                ->closeModalByClickingAway(false),
         ];
     }
 }

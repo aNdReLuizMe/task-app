@@ -5,10 +5,12 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
+use Filament\Forms\Get;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -18,22 +20,29 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
     protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static bool $hasTitleCaseModelLabel = false;
     protected static ?string $slug = 'gestao-usuarios';
     protected static ?string $navigationGroup = 'Gestão';
     protected static ?string $navigationLabel = 'Usuários';
     protected static ?string $pluralModelLabel = 'Usuários cadastrados';
 
-
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
+            ->schema(self::inputForm());
+    }
+
+    public static function inputForm(): array
+    {
+        return [
+            Section::make()->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required()
+                    ->unique(table: 'users', column: 'email', ignoreRecord: true)
                     ->maxLength(255),
                 Forms\Components\TextInput::make('password')
                     ->label('Senha')
@@ -52,7 +61,13 @@ class UserResource extends Resource
                     ->dehydrated(false)
                     ->revealable()
                     ->visible(fn($operation) => $operation !== 'view'),
-            ]);
+                Forms\Components\Toggle::make('active')
+                    ->label(fn(Get $get) => $get('active') ? 'Usuário ativo' : 'Usuário inativo')
+                    ->live()
+                    ->default(true)
+                    ->required(),
+            ]),
+        ];
     }
 
     public static function table(Table $table): Table
@@ -63,6 +78,14 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Nível de acesso')
+                    ->listWithLineBreaks()
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\IconColumn::make('active')
+                    ->label('Ativo')
+                    ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -103,9 +126,6 @@ class UserResource extends Resource
     {
         return [
             'index' => Pages\ListUsers::route('/'),
-            // 'create' => Pages\CreateUser::route('/create'),
-            // 'view' => Pages\ViewUser::route('/{record}'),
-            // 'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 

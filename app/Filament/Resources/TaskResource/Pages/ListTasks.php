@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\TaskResource\Pages;
 
-use App\Filament\Resources\TaskResource;
 use Filament\Actions;
+use App\Filament\Resources\TaskResource;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTasks extends ListRecords
@@ -13,7 +13,11 @@ class ListTasks extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Nova Tarefa')
+                ->modalSubmitActionLabel('Salvar Tarefa')
+                ->modalHeading()
+                ->closeModalByClickingAway(false),
         ];
     }
 }
